@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Avatar Upload</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .form-group { margin: 20px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, button { padding: 10px; margin: 5px 0; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin: 20px 0; padding: 15px; border: 1px solid #ddd; background: #f9f9f9; }
+        .avatar-preview { max-width: 200px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Test Avatar Upload</h1>
+    
+    <div class="form-group">
+        <label>JWT Token:</label>
+        <input type="text" id="token" placeholder="Enter your JWT token here" style="width: 500px;">
+    </div>
+    
+    <div class="form-group">
+        <label>Select Avatar Image:</label>
+        <input type="file" id="avatarFile" accept="image/*">
+    </div>
+    
+    <button onclick="uploadAvatar()">Upload Avatar</button>
+    <button onclick="deleteAvatar()">Delete Avatar</button>
+    <button onclick="getProfile()">Get Profile</button>
+    
+    <div id="result" class="result" style="display: none;"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        
+        function showResult(data) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+            
+            // Show avatar if present
+            if (data.user && data.user.avatar) {
+                const img = document.createElement('img');
+                img.src = API_BASE.replace('/api', '') + data.user.avatar;
+                img.className = 'avatar-preview';
+                img.alt = 'Avatar';
+                resultDiv.appendChild(img);
+            }
+        }
+        
+        function getToken() {
+            const token = document.getElementById('token').value.trim();
+            if (!token) {
+                alert('Please enter your JWT token');
+                return null;
+            }
+            return token;
+        }
+        
+        async function uploadAvatar() {
+            const token = getToken();
+            if (!token) return;
+            
+            const fileInput = document.getElementById('avatarFile');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select an image file');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('avatar', file);
+            
+            try {
+                const response = await fetch(`${API_BASE}/users/avatar`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                showResult(data);
+            } catch (error) {
+                showResult({ error: error.message });
+            }
+        }
+        
+        async function deleteAvatar() {
+            const token = getToken();
+            if (!token) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/users/avatar`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                showResult(data);
+            } catch (error) {
+                showResult({ error: error.message });
+            }
+        }
+        
+        async function getProfile() {
+            const token = getToken();
+            if (!token) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/users/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                showResult(data);
+            } catch (error) {
+                showResult({ error: error.message });
+            }
+        }
+    </script>
+</body>
+</html>

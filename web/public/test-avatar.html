@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Avatar Upload</title>
+</head>
+<body>
+    <h1>Test Avatar Upload</h1>
+    
+    <div id="loginSection">
+        <h3>1. Login First</h3>
+        <input type="text" id="phone" placeholder="Phone" value="0123456789">
+        <input type="password" id="password" placeholder="Password" value="password123">
+        <button onclick="login()">Login</button>
+    </div>
+    
+    <div id="uploadSection" style="display: none;">
+        <h3>2. Upload Avatar</h3>
+        <input type="file" id="avatarFile" accept="image/*">
+        <button onclick="uploadAvatar()">Upload Avatar</button>
+        <button onclick="getProfile()">Get Profile</button>
+    </div>
+    
+    <div id="result"></div>
+
+    <script>
+        let token = localStorage.getItem('token');
+        
+        if (token) {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('uploadSection').style.display = 'block';
+        }
+        
+        async function login() {
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/users/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ phone, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('token', data.token);
+                    token = data.token;
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('uploadSection').style.display = 'block';
+                    document.getElementById('result').innerHTML = '<p style="color: green;">Login successful!</p>';
+                } else {
+                    document.getElementById('result').innerHTML = `<p style="color: red;">Login failed: ${data.message}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function uploadAvatar() {
+            const file = document.getElementById('avatarFile').files[0];
+            if (!file) {
+                alert('Please select a file');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('avatar', file);
+            
+            try {
+                const response = await fetch('http://localhost:5000/api/users/avatar', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = `
+                        <p style="color: green;">Upload successful!</p>
+                        <p>Avatar URL: ${data.user.avatar}</p>
+                        <img src="http://localhost:5000${data.user.avatar}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `<p style="color: red;">Upload failed: ${data.message}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+        
+        async function getProfile() {
+            try {
+                const response = await fetch('http://localhost:5000/api/users/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('result').innerHTML = `
+                        <p style="color: green;">Profile loaded!</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                        ${data.avatar ? `<img src="http://localhost:5000${data.avatar}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 50%;">` : '<p>No avatar</p>'}
+                    `;
+                } else {
+                    document.getElementById('result').innerHTML = `<p style="color: red;">Failed: ${data.message}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

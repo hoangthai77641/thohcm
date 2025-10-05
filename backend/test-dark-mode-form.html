@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dark Mode - Notification Form</title>
+    <style>
+        :root{
+          --primary:#0ea5e9;
+          --primary-600:#0284c7;
+          --primary-bg:#f0f9ff;
+          --primary-dark:#0c4a6e;
+          --text:#0f172a;
+          --text-secondary:#64748b;
+          --muted:#64748b;
+          --bg:#f5f7fb;
+          --card-bg:#ffffff;
+          --border:#e5e7eb;
+          --hover-bg:#f8fafc;
+          --radius:12px;
+          --shadow:0 1px 2px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+        }
+
+        :root[data-theme='dark']{
+          --primary:#38bdf8;
+          --primary-600:#0ea5e9;
+          --primary-bg:#1e293b;
+          --primary-dark:#38bdf8;
+          --text:#f1f5f9;
+          --text-secondary:#94a3b8;
+          --muted:#94a3b8;
+          --bg:#0f172a;
+          --card-bg:#1e293b;
+          --border:#334155;
+          --hover-bg:#334155;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .notification-manager {
+          max-width: 800px;
+          margin: 0 auto;
+          padding: 24px;
+          background: var(--primary-bg);
+          border-radius: 12px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+          color: var(--text);
+        }
+
+        .notification-tabs {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 24px;
+          border-bottom: 1px solid var(--border);
+        }
+
+        .tab-button {
+          padding: 12px 20px;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          font-weight: 500;
+          color: var(--muted);
+          border-bottom: 2px solid transparent;
+          transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+          color: #2196F3;
+          border-bottom-color: #2196F3;
+        }
+
+        .form-group {
+          margin-bottom: 20px;
+        }
+
+        .form-group label {
+          display: block;
+          margin-bottom: 8px;
+          font-weight: 500;
+          color: var(--text);
+        }
+
+        .target-options {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 16px;
+        }
+
+        .radio-option {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+          color: var(--text);
+        }
+
+        .user-select, select, input, textarea {
+          width: 100%;
+          padding: 12px;
+          border: 1px solid var(--border);
+          border-radius: 6px;
+          font-size: 14px;
+          background: var(--primary-bg);
+          color: var(--text);
+          box-sizing: border-box;
+        }
+
+        .user-select:focus, select:focus, input:focus, textarea:focus {
+          outline: none;
+          border-color: #2196F3;
+          box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.1);
+        }
+
+        .form-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+
+        .send-button {
+          background: #2196F3;
+          color: white;
+          border: none;
+          padding: 12px 24px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-weight: 500;
+          transition: background 0.3s ease;
+        }
+
+        .send-button:hover {
+          background: #1976D2;
+        }
+
+        /* Dark mode specific styles */
+        :root[data-theme='dark'] .notification-manager {
+          background: var(--primary-bg) !important;
+          color: var(--text) !important;
+          border: 1px solid var(--border);
+        }
+
+        :root[data-theme='dark'] .user-select,
+        :root[data-theme='dark'] select,
+        :root[data-theme='dark'] input,
+        :root[data-theme='dark'] textarea {
+          background: var(--primary-bg) !important;
+          border-color: var(--border) !important;
+          color: var(--text) !important;
+        }
+
+        :root[data-theme='dark'] .user-select option,
+        :root[data-theme='dark'] select option {
+          background: var(--primary-bg) !important;
+          color: var(--text) !important;
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌙 Toggle Dark Mode</button>
+    
+    <div class="notification-manager">
+        <div class="notification-tabs">
+            <button class="tab-button active">Gửi thông báo</button>
+            <button class="tab-button">Mẫu thông báo</button>
+        </div>
+
+        <form class="send-notification-form">
+            <h3>Gửi thông báo mới</h3>
+            
+            <div class="form-group">
+                <label>Đối tượng nhận thông báo:</label>
+                <div class="target-options">
+                    <label class="radio-option">
+                        <input type="radio" name="targetType" value="specific" checked>
+                        <span>Một user cụ thể</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="targetType" value="customers">
+                        <span>Toàn bộ khách hàng</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="targetType" value="workers">
+                        <span>Toàn bộ thợ</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="targetType" value="all">
+                        <span>Toàn bộ user</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Chọn người dùng:</label>
+                <select class="user-select">
+                    <option value="">-- Chọn người dùng --</option>
+                    <option value="user1">admin@example.com (Admin)</option>
+                    <option value="user2">worker@example.com (Worker)</option>
+                    <option value="user3">customer@example.com (Customer)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Nhập tiêu đề thông báo:</label>
+                <input type="text" placeholder="Nhập tiêu đề thông báo..." value="Thông báo quan trọng">
+            </div>
+
+            <div class="form-group">
+                <label>Nhập nội dung thông báo:</label>
+                <textarea rows="4" placeholder="Nhập nội dung thông báo...">Đây là nội dung thông báo test để kiểm tra giao diện dark mode</textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Loại thông báo:</label>
+                    <select>
+                        <option value="info">Thông tin</option>
+                        <option value="success">Thành công</option>
+                        <option value="warning">Cảnh báo</option>
+                        <option value="error">Lỗi</option>
+                        <option value="promotion">Khuyến mãi</option>
+                        <option value="system">Hệ thống</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Mức độ ưu tiên:</label>
+                    <select>
+                        <option value="normal">Bình thường</option>
+                        <option value="high">Cao</option>
+                        <option value="urgent">Khẩn cấp</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="send-button">Gửi thông báo</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const root = document.documentElement;
+            const currentTheme = root.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', newTheme);
+            
+            const button = document.querySelector('.theme-toggle');
+            button.textContent = newTheme === 'dark' ? '☀️ Toggle Light Mode' : '🌙 Toggle Dark Mode';
+        }
+    </script>
+</body>
+</html>
